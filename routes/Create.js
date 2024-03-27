@@ -1,40 +1,40 @@
 // index.js inside router folder
 const express = require("express");
-const Product = require("../helpers/product-helper");
+const ProductModel = require("../helpers/product-helper");
 const router = express.Router();
 
 router.get('/', (req, res) => {
     res.render('Create_operations');
 });
 
-router.delete('/fruits/:id', (req, res) => {
-    Product.findByIdAndDelete(req.params.id)
-        .then((product) => {
-            res.send(product)
-        })
-        .catch((error) => {
-            res.status(500).send(error);
-        });
-});
+//Saving a document to the mongodb using .save() method
+// router.post('/products',(req,res)=>{
+//     const product = new ProductModel(req.body);
+//     product.save().then((product)=>{
+//         res.status(201).send(product)
+//     }).catch((error)=>{
+//         res.status(400).send(error);
+//     })
+// })
 
+// //Create many documents together to mongodb instantly. 
+// router.post('/products',(req,res)=>{
+//     ProductModel.create(req.body).then((products)=>{
+//         res.status(201).send(product)
+//     }).catch((error)=>{
+//         res.status(400).send(error);
+//     })
+// })
+
+//Insert many documents together to mongodb using insertMany() method
 router.post('/products', (req, res) => {
-    Product.insertMany(req.body)
+    ProductModel.insertMany(req.body)
         .then((products) => {
             console.log(products)
             res.status(201).send(products);
         })
         .catch((error) => {
             res.status(400).send(error);
-        });
-});
-
-router.get('/products', (req, res) => {
-    Product.find({})
-        .then((products) => {
-            res.send(products);
-        })
-        .catch((error) => {
-            res.status(500).send(error);
         });
 });
 
