@@ -3,6 +3,7 @@ const app = express();                      // saving express function to variab
 require("./config/connection");             // importing mongoose or mongodb connection
 const path = require('path');               // for path module
 var hbs = require("express-handlebars");    // for hbs module to setup view engine
+var session = require('express-session')    // for express session creation
 
 // Importing routes
 const createRouter = require('./routes/Create'); 
@@ -13,6 +14,16 @@ const userRouter = require('./routes/user');
 
 // Middleware to parse URL-encoded form data
 app.use(express.urlencoded({ extended: true }));
+
+// Set up session middleware with 60-second timeout
+app.use(session({
+    secret: 'your_secret_key', // Secret key to sign the session ID cookie
+    resave: false,
+    saveUninitialized: false,
+    cookie: { maxAge: 60000 } // Set maxAge to 60000 milliseconds (60 seconds)
+}));
+
+
 
 // Middleware to parse JSON bodies (normally used for parsing form json data)
 app.use(express.json());  

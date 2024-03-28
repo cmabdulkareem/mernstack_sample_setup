@@ -1,36 +1,35 @@
 const express = require("express");
 const UserModel = require("../helpers/user-helper");
 const router = express.Router();
-const bcrypt = require('bcrypt')
+const bcrypt = require('bcrypt');
 
+// Render user registration page
 router.get('/', (req, res) => {
     res.render('user');
 });
 
-
 //Hashing password using bcrypt module for signup
-router.post('/login', (req, res) => {
+router.post('/signup', (req, res) => {
     bcrypt.hash(req.body.password, 10)
         .then((hashedPassword) => {
             req.body.password = hashedPassword;
             return UserModel.create(req.body); 
         })
         .then((user) => {
-            res.status(201).send(user);
+            res.redirect(303, '/user/login'); // Use status code 303 for redirect after POST
         })
         .catch((error) => {
             res.status(400).send(error);
         });
 });
 
-//Login page
+// Render login page
 router.get('/login', (req, res) => {
     res.render('user/login');
 });
 
-
-// Loggin for validation
-router.post('/userpage', (req, res) => {
+// Handle user login
+router.post('/login', (req, res) => {
     const { userName, password } = req.body;
 
     // Find the user by username
@@ -44,6 +43,8 @@ router.post('/userpage', (req, res) => {
             bcrypt.compare(password, user.password)
                 .then((result) => {
                     if (result) {
+                        // Store user information in session upon successful login
+                        req.session.userName = userName;
                         res.redirect('/user/userpage');
                     } else {
                         res.status(401).send("Invalid password");
@@ -58,11 +59,31 @@ router.post('/userpage', (req, res) => {
         });
 });
 
-// for redirecting after success loggin
+// Render userpage upon successful login
 router.get('/userpage', (req, res) => {
-    res.render('user/userpage');
+    // Check if user is authenticated
+    if (req.session && req.session.userName) {
+        const userName = req.session.userName;
+        res.render('user/userpage', { userName }); // Pass userName to userpage.hbs template
+    } else {
+        res.redirect('/user/login'); // Redirect to login page if user is not authenticated
+    }
 });
 
+
+// Handle user logout
+router.post('/logout', (req, res) => {
+    // Destroy the session to log out the user
+    req.session.destroy((err) => {
+        if (err) {
+            console.error('Error destroying session:', err);
+            res.status(500).send('Internal Server Error');
+        } else {
+            // Redirect the user to the login page after logout
+            res.redirect('/user/login');
+        }
+    });
+});
 
 
 module.exports = router;
