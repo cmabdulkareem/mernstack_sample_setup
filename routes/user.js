@@ -44,7 +44,7 @@ router.post('/userpage', (req, res) => {
             bcrypt.compare(password, user.password)
                 .then((result) => {
                     if (result) {
-                        res.status(200).send("Login successful");
+                        res.redirect('/user/userpage');
                     } else {
                         res.status(401).send("Invalid password");
                     }
@@ -58,6 +58,10 @@ router.post('/userpage', (req, res) => {
         });
 });
 
+// for redirecting after success loggin
+router.get('/userpage', (req, res) => {
+    res.render('user/userpage');
+});
 
 
 
