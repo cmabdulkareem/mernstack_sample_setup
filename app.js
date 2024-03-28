@@ -9,6 +9,7 @@ const createRouter = require('./routes/Create');
 const readRouter = require('./routes/Read');
 const updateRouter = require('./routes/Update');
 const deleteRouter = require('./routes/Delete');
+const userRouter = require('./routes/user');
 
 // Middleware to parse URL-encoded form data
 app.use(express.urlencoded({ extended: true }));
@@ -28,6 +29,7 @@ app.use('/', createRouter);
 app.use('/read', readRouter);
 app.use('/update', updateRouter);
 app.use('/delete', deleteRouter);
+app.use('/user', userRouter);
 
 app.listen(3000, () => {
     console.log(`app listening on port ${3000}`);
