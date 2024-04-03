@@ -8,7 +8,7 @@ const ProductModel = require('../helpers/product-helper')
 router.get('/', (req, res)=>{
     ProductModel.find({}).lean()
     .then((products)=>{
-        res.render('admin/view-products', {products: products})
+        res.render('admin/view-products', {products: products, admin: true})
     })
 })
 

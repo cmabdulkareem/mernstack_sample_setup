@@ -15,10 +15,10 @@
 
 {{#each products}}
 <tr>
-    <th scope="row"></th>
+    <th scope="row">{{@index}}</th>
     <td>{{this.itemName}}</td>
     <td>{{this.itemDesc}}</td>
-    <td>{{this.price}}</td>
+    <td>{{this.itemPrice}}</td>
     <td><img src="/images/product-images/{{this._id}}.jpg" style="max-width: 100px;"></td>
     <td>
         <a href="admin/delete-product/{{this._id}}" class="btn btn-outline-primary me-2">Edit</button>
