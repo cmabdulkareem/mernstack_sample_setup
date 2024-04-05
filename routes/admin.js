@@ -12,19 +12,6 @@ router.get('/', (req, res)=>{
     })
 })
 
-// router.get('/',(req,res)=>{
-//     ProductModel.find({}).lean()
-//     .then((products) => {
-//         console.log("Products:", products);
-//         res.render('admin/view-products', { product: products, admin:true }); // Note: Using singular 'product'
-//     })
-//     .catch((error) => {
-//         console.error("Error fetching products:", error);
-//         res.status(500).send(error);
-//     });
-// })
-
-
 router.get('/add-products',(req,res)=>{
     res.render('admin/add-products.hbs')
 })                                     
@@ -46,6 +33,64 @@ router.post('/add-products',(req,res)=>{
         res.status(400).send(error);
     });
 })
+
+
+// edit product page route
+router.get('/edit-product/:id',(req,res)=>{
+    const productId = req.params.id;
+    ProductModel.findById(productId).lean()
+    .then((product)=>{
+        res.render('admin/edit-product', { product })
+    })
+})
+
+
+//edit product post route
+router.post('/edit-product/:id', (req, res) => {
+    const productId = req.params.id;
+    const { itemName, itemDesc, itemPrice } = req.body;
+
+    // Check if files were uploaded
+    if (req.files && req.files.Image) {
+        let image = req.files.Image;
+
+        // Update product details and handle image upload
+        ProductModel.findByIdAndUpdate(productId, {
+            itemName: itemName,
+            itemDesc: itemDesc,
+            itemPrice: itemPrice
+        })
+        .then((product) => {
+            // Move uploaded image to the appropriate directory
+            image.mv(path.join(__dirname, '../public/images/product-images', `${productId}.jpg`), (err) => {
+                if (err) {
+                    console.error(err);
+                    return res.status(500).send(err);
+                }
+                res.redirect('/admin');
+            });
+        })
+        .catch((error) => {
+            console.error(error);
+            res.status(500).send(error);
+        });
+    } else {
+        // If no new image was uploaded, update only product details
+        ProductModel.findByIdAndUpdate(productId, {
+            itemName: itemName,
+            itemDesc: itemDesc,
+            itemPrice: itemPrice
+        })
+        .then(() => {
+            res.redirect('/admin');
+        })
+        .catch((error) => {
+            console.error(error);
+            res.status(500).send(error);
+        });
+    }
+});
+
 
 // Route to handle deletion of products
 router.get('/delete-product/:id', (req, res) => {

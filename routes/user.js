@@ -139,6 +139,7 @@ router.get('/add-to-cart/:id', verifyLogin, (req, res) => {
     });
 });
 
+// View cart
 router.get('/cart', verifyLogin, (req, res) => {
     const userId = req.session.userId; // Get the user ID from the session
 
