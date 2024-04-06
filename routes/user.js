@@ -3,10 +3,27 @@ const router = express.Router();
 const bcrypt = require('bcrypt');
 const UserModel = require('../helpers/user-helper')
 const ProductModel = require('../helpers/product-helper')
+const CartModel = require('../helpers/cart-helper');
+
+
+const verifyLoggin = (req,res,next) =>{
+    if(req.session.userName){
+        next();
+    }else{
+        res.redirect('/login')
+    }
+}
 
 //user route get method
 router.get('/',(req,res)=>{
-    res.render('user/userhome',{admin:false})
+    let user = req.session.userName;
+
+    ProductModel.find({}).lean()
+    .then((products)=>{
+        console.log(products)
+        res.render('user/userhome',{user, products:products})
+    })
+ 
 })
 
 //signup route get method
@@ -53,6 +70,7 @@ router.post('/login',(req,res)=>{
         .then((result)=>{
             if(result){
                 req.session.userName = userName;
+                req.session.userId = user._id;
                 res.redirect('userpage');
             }else{
                 return res.render('user/login',{errorText : "Invalid password"})
@@ -99,6 +117,31 @@ router.post('/logout',(req,res)=>{
             res.redirect('login')
         }
     })
+})
+
+router.get('/add-to-cart/:id', verifyLoggin, (req,res)=>{
+    const userId = req.session.userId
+    const productId = req.params.id;
+
+    const updateOperation = {
+        $addToSet: {products: productId}
+    };
+    
+    CartModel.findOneAndUpdate(
+        {user: userId},
+        updateOperation,
+        {upsert: true, new:true}
+    )
+    .then(()=>{
+        res.redirect('/')
+    })
+    .catch((error)=>{
+        console.log("error adding products")
+    })
+})
+
+router.get('/cart',verifyLoggin,(req,res)=>{
+    res.render('user/cart')
 })
 
 module.exports = router;

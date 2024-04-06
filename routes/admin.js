@@ -12,6 +12,8 @@ router.get('/', (req, res)=>{
     })
 })
 
+
+
 // router.get('/',(req,res)=>{
 //     ProductModel.find({}).lean()
 //     .then((products) => {
@@ -63,5 +65,55 @@ router.get('/delete-product/:id', (req, res) => {
             res.status(500).send("Error deleting product");
         });
 });
+
+router.get('/edit-product/:id', (req, res)=>{
+    productId = req.params.id
+    console.log(productId)
+    ProductModel.findById(productId).lean()
+    .then((product)=>{
+        console.log(product)
+        res.render('admin/edit-product', {product: product})
+    })
+})
+
+router.post('/edit-product/:id', (req, res)=>{
+    productId = req.params.id
+    const {itemName, itemDesc, itemPrice} = req.body;
+
+    if(req.files && req.files.Image){
+        let image = req.files.Image;
+
+        ProductModel.findByIdAndUpdate(productId, {
+            itemName: itemName,
+            itemDesc: itemDesc,
+            itemPrice: itemPrice
+        })
+        .then(()=>{
+            image.mv(path.join(__dirname, '../public/images/product-images',`${productId}.jpg`), (err)=>{
+                if(err){
+                    console.log(err);
+                    return res.status(500).send(err)
+                }
+                res.redirect('/admin');
+            })
+        }).catch((error)=>{
+            console.log(error);
+            res.status(500).send(error)
+        })
+    }else{
+        ProductModel.findByIdAndUpdate(productId, {
+            itemName: itemName,
+            itemDesc: itemDesc,
+            itemPrice: itemPrice
+        })
+        .then(()=>{
+            res.redirect('/admin')
+        }).catch((error)=>{
+            res.status(500).send(error);
+        })
+    }
+})
+
+
 
 module.exports = router;
