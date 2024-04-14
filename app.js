@@ -1,5 +1,9 @@
 const express = require("express");         // for express module
+const http = require("http");
+const socketIo = require("socket.io");
 const app = express();                      // saving express function to variable app
+const server = http.createServer(app);
+const io = socketIo(server);
 require("./config/connection");             // importing mongoose or mongodb connection
 const path = require('path');               // for path module
 var hbs = require("express-handlebars");    // for hbs module to setup view engine
@@ -9,6 +13,16 @@ var fileUpload = require("express-fileupload"); // for file upload middleware to
 // Importing routes
 const adminRouter = require('./routes/admin'); 
 const userRouter = require('./routes/user')
+
+
+// Socket.IO event listeners
+io.on("connection", (socket) => {
+    console.log("New client connected");
+
+    socket.on("disconnect", () => {
+        console.log("Client disconnected");
+    });
+});
 
 // Middleware to parse URL-encoded form data
 app.use(express.urlencoded({ extended: true }));
@@ -44,6 +58,6 @@ app.engine('hbs', hbs.engine({
 app.use('/',userRouter);
 app.use('/admin', adminRouter);
 
-app.listen(3000, () => {
-    console.log(`app listening on port ${3000}`);
-});
+// Start the server
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => console.log(`app listening on port ${PORT}`));

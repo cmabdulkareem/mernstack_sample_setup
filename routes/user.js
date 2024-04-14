@@ -17,11 +17,33 @@ const verifyLogin = (req,res,next) => {
 //user route get method
 router.get('/', (req, res) => {
     let user = req.session.user;
+    var cartCount = null;
     ProductModel.find({}).lean()
     .then((products)=>{
-        res.render('user/users', {products: products, admin: false, user})
+        if (user) { // Check if user is found
+            // Find the user's cart
+            CartModel.findOne({ user: user._id })
+                .then((cart) => {
+                    // If the cart is found, pass the number of items inside the products array
+                    if (cart) {
+                        cartCount = cart.products.length;
+                        console.log("Number of items in user's cart:", cartCount);
+                        res.render('user/users', { products: products, admin: false, user, cartCount });
+                    } else {
+                        // If the cart is not found, render the view without cartCount
+                        res.render('user/users', { products: products, admin: false, user });
+                    }
+                })
+                .catch((error) => {
+                    console.error("Error fetching cart:", error);
+                    res.status(500).send('Internal server error');
+                });
+        } else {
+            // If user is not found, render the view without cartCount
+            res.render('user/users', { products: products, admin: false, user });
+        }
     })
-    .catch(error => {
+    .catch((error) => {
         console.error("Error fetching products:", error);
         res.status(500).send('Internal server error');
     });
@@ -150,7 +172,7 @@ router.get('/cart', verifyLogin, (req, res) => {
         .then(cart => {
             if (!cart) {
                 // If the cart does not exist, render the cart page with an empty array of products
-                return res.render('user/cart', { products: [] });
+                return res.render('user/cart', { products: [] }, cartCount);
             } else {
                 // If the cart exists, extract product IDs from the cart
                 const productIds = cart.products.map(product => product._id);
